@@ -289,3 +289,86 @@ class JVSCVExtractor:
                                 meta.append({'speaker': speaker, 'file': lab_file})
 
         return X_deg, y_class, meta
+
+    def extract_transient_burst_aligned(self, speakers, target_type='transient', burst_pre_ms=20.0, burst_post_ms=40.0):
+        """
+        Diagnostic extraction specifically for transient sounds (plosives, affricates),
+        aligned to the detected burst rather than a fixed vowel anchor.
+        Window = [-burst_pre_ms, +burst_post_ms] relative to the detected burst.
+        """
+        import librosa
+        X_deg = []
+        y_class = []
+        meta = []
+        
+        manner_map = {
+            'p': 'Unvoiced Plosive', 'py': 'Unvoiced Plosive', 't': 'Unvoiced Plosive', 'k': 'Unvoiced Plosive', 'ky': 'Unvoiced Plosive',
+            'b': 'Voiced Plosive', 'by': 'Voiced Plosive', 'd': 'Voiced Plosive', 'g': 'Voiced Plosive', 'gy': 'Voiced Plosive',
+            'ts': 'Unvoiced Affricate', 'ch': 'Unvoiced Affricate',
+            'z': 'Voiced Affricate/Fricative', 'j': 'Voiced Affricate/Fricative',
+        }
+        vowels = ['a', 'i', 'u', 'e', 'o']
+        
+        for speaker in speakers:
+            wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
+            lab_speaker_dir = os.path.join(self.lab_dir, speaker)
+            
+            if not os.path.exists(wav_dir) or not os.path.exists(lab_speaker_dir):
+                continue
+                
+            for lab_file in os.listdir(lab_speaker_dir):
+                if not lab_file.endswith('.lab'):
+                    continue
+                    
+                lab_path = os.path.join(lab_speaker_dir, lab_file)
+                wav_path = os.path.join(wav_dir, lab_file.replace('.lab', '.wav'))
+                if not os.path.exists(wav_path):
+                    continue
+                    
+                phonemes = self.parse_lab_file(lab_path)
+                sr, audio = wavfile.read(wav_path)
+                if audio.dtype == np.int16:
+                    audio = audio.astype(np.float32) / 32768.0
+                
+                for i in range(1, len(phonemes)):
+                    ph = phonemes[i]
+                    prev_ph = phonemes[i-1]
+                    prev_prev_ph = phonemes[i-2] if i > 1 else None
+                    
+                    if ph['phoneme'] in vowels and prev_ph['phoneme'] in manner_map:
+                        if prev_prev_ph is None or prev_prev_ph['phoneme'] in ['silB', 'sp', 'silE']:
+                            continue
+                            
+                        vowel_start = ph['start']
+                        search_start = vowel_start - 0.150
+                        if search_start < 0:
+                            continue
+                            
+                        # Detect burst
+                        start_idx = int(search_start * self.sr_orig)
+                        end_idx = int(vowel_start * self.sr_orig)
+                        c_audio = audio[start_idx:end_idx]
+                        
+                        frame_length = int(0.005 * self.sr_orig)
+                        hop_length = int(0.001 * self.sr_orig)
+                        
+                        # Use preemphasis to suppress low frequencies and highlight bursts/friction
+                        audio_hp = librosa.effects.preemphasis(c_audio)
+                        rms = librosa.feature.rms(y=audio_hp, frame_length=frame_length, hop_length=hop_length)[0]
+                        rms_diff = np.diff(rms, prepend=rms[0])
+                        peak_frame = np.argmax(rms_diff)
+                        burst_sample_offset = peak_frame * hop_length
+                        burst_idx = start_idx + burst_sample_offset
+                        
+                        # Extract around burst
+                        slice_start_idx = burst_idx - int((burst_pre_ms / 1000.0) * self.sr_orig)
+                        slice_end_idx = burst_idx + int((burst_post_ms / 1000.0) * self.sr_orig)
+                        
+                        if slice_start_idx >= 0 and slice_end_idx <= len(audio):
+                            transient_audio = audio[slice_start_idx:slice_end_idx]
+                            c_deg = self.pipe.process(transient_audio, self.sr_orig, hpf_cutoff=500.0)
+                            X_deg.append(c_deg)
+                            y_class.append(manner_map[prev_ph['phoneme']])
+                            meta.append({'speaker': speaker, 'file': lab_file})
+
+        return X_deg, y_class, meta
