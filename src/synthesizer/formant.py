@@ -37,22 +37,22 @@ class FormantSynthesizer:
     def apply_formant_filter(self, x, f_center, bandwidth):
         """
         単一のフォルマント（共振）フィルタを適用する（2nd order IIR peak filter）。
+        並列（パラレル）合成に用いるため、帯域外を減衰させるこのフィルタが適している。
         """
         Q = f_center / bandwidth
         b, a = signal.iirpeak(f_center, Q, self.sample_rate)
         return signal.lfilter(b, a, x)
 
     def synthesize_vowel(self, f0, formants, duration=1.0):
-        """
-        指定されたフォルマント群から母音を合成する。
-        formants: [(f_center1, bw1), (f_center2, bw2), ...] のリスト
-        """
         t, source = self.generate_impulse_train(f0, duration)
         
-        # 直列（カスケード）接続でフィルタリング
-        y = source.copy()
-        for f_center, bw in formants:
-            y = self.apply_formant_filter(y, f_center, bw)
+        # 各フォルマントフィルタを並列（パラレル）に適用
+        y = np.zeros_like(source)
+        amplitudes = [1.0, 0.5, 0.2] # F1 > F2 > F3 の相対振幅
+        
+        for i, (f_center, bw) in enumerate(formants):
+            gain = amplitudes[i] if i < len(amplitudes) else 0.1
+            y += gain * self.apply_formant_filter(source, f_center, bw)
             
         # 波形の正規化 (-1.0 to 1.0)
         max_val = np.max(np.abs(y))

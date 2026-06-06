@@ -10,7 +10,8 @@ from src.synthesizer.formant import FormantSynthesizer
 from src.synthesizer.pipeline import DegradationPipeline
 
 def plot_spectrogram(ax, y, sr, title):
-    ax.specgram(y, Fs=sr, NFFT=256, noverlap=128, cmap='magma')
+    # 対数（dB）スケール表示に変更し、全帯域のコントラストを明瞭化
+    ax.specgram(y, Fs=sr, NFFT=256, noverlap=128, mode='magnitude', scale='dB', cmap='magma', vmin=-80)
     ax.set_title(title)
     ax.set_ylabel("Freq (Hz)")
     ax.set_ylim(0, 4000)
