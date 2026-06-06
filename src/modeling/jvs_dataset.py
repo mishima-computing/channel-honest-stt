@@ -343,13 +343,15 @@ class JVSCVExtractor:
                             slice_end = vowel_start
                             
                             start_idx = int(slice_start * self.sr_orig)
-                            end_idx = int(slice_end * self.sr_orig)
+                            expected_samples = int((cons_pre_ms / 1000.0) * self.sr_orig)
+                            end_idx = start_idx + expected_samples
                             
                             if start_idx >= 0 and end_idx <= len(audio):
                                 c_audio = audio[start_idx:end_idx]
-                                X_clean.append(c_audio)
-                                y_class.append(manner_map[prev_ph['phoneme']])
-                                meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': prev_ph['phoneme']})
+                                if len(c_audio) == expected_samples:
+                                    X_clean.append(c_audio)
+                                    y_class.append(manner_map[prev_ph['phoneme']])
+                                    meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': prev_ph['phoneme']})
                                 
                     elif target_type == 'vowel':
                         if ph['phoneme'] in vowels:
@@ -358,16 +360,17 @@ class JVSCVExtractor:
                                 
                             vowel_start = ph['start']
                             slice_start = vowel_start
-                            slice_end = vowel_start + (vowel_dur_ms / 1000.0)
                             
                             start_idx = int(slice_start * self.sr_orig)
-                            end_idx = int(slice_end * self.sr_orig)
+                            expected_samples = int((vowel_dur_ms / 1000.0) * self.sr_orig)
+                            end_idx = start_idx + expected_samples
                             
                             if start_idx >= 0 and end_idx <= len(audio):
                                 v_audio = audio[start_idx:end_idx]
-                                X_clean.append(v_audio)
-                                y_class.append(f"/{ph['phoneme']}/")
-                                meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': ph['phoneme']})
+                                if len(v_audio) == expected_samples:
+                                    X_clean.append(v_audio)
+                                    y_class.append(f"/{ph['phoneme']}/")
+                                    meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': ph['phoneme']})
 
         return X_clean, y_class, meta
 
@@ -519,12 +522,11 @@ class JVSCVExtractor:
 
         return X_deg, y_class, meta
 
-    def extract_unified_features(self, speakers, target_type='all', pre_anchor_ms=20.0, post_anchor_ms=40.0):
+    def extract_dual_window_features(self, speakers, target_type='all'):
         """
-        Extracts a unified fixed-length window (e.g. [-20ms, +40ms]) for all 9 classes.
-        Anchors:
-        - Burst anchor for plosives/affricates (p, t, k, ts, ch, b, d, g).
-        - Label anchor for continuous sounds (s, sh, h, f, m, n, N, r, z, j, a, i, u, e, o).
+        Extracts features using a Dual Window architecture (60ms fixed dimension for all):
+        - Consonants: [-20ms, +40ms] anchored to burst or label.
+        - Vowels: [0ms, +60ms] anchored to vowel label.
         Returns X_deg, y_class, meta.
         """
         import librosa
@@ -567,7 +569,6 @@ class JVSCVExtractor:
                     ph_name = ph['phoneme']
                     prev_ph_name = phonemes[i-1]['phoneme'] if i > 0 else None
                     
-                    # Target logic: if target_type == 'all', we extract consonants (when followed by vowel) and vowels
                     is_valid_consonant = ph_name in vowels and prev_ph_name in manner_map
                     is_valid_vowel = ph_name in vowels and prev_ph_name not in ['silB', 'sp', 'silE']
                     
@@ -575,49 +576,56 @@ class JVSCVExtractor:
                     extract_class = None
                     extract_start = None
                     next_start = None
+                    is_vowel_target = False
                     
                     if (target_type in ['all', 'consonant']) and is_valid_consonant:
                         extract_ph = prev_ph_name
                         extract_class = manner_map[prev_ph_name]
                         extract_start = phonemes[i-1]['start']
                         next_start = ph['start']
+                        is_vowel_target = False
                     elif (target_type in ['all', 'vowel']) and is_valid_vowel:
                         extract_ph = ph_name
                         extract_class = f"/{ph_name}/"
                         extract_start = ph['start']
                         next_start = phonemes[i+1]['start'] if i+1 < len(phonemes) else ph['end']
+                        is_vowel_target = True
                         
                     if extract_ph is None:
                         continue
                         
-                    if extract_ph in burst_anchors:
-                        # Find burst
-                        search_start = max(0, extract_start - 0.050)
-                        search_end = next_start
-                        start_idx = int(search_start * self.sr_orig)
-                        end_idx = int(search_end * self.sr_orig)
-                        search_audio = audio[start_idx:end_idx]
-                        if len(search_audio) == 0: continue
-                            
-                        audio_hp = librosa.effects.preemphasis(search_audio)
-                        frame_length = int(0.005 * self.sr_orig)
-                        hop_length = int(0.001 * self.sr_orig)
-                        rms = librosa.feature.rms(y=audio_hp, frame_length=frame_length, hop_length=hop_length)[0]
-                        rms_diff = np.diff(rms, prepend=rms[0])
-                        burst_offset = np.argmax(rms_diff) * hop_length
-                        anchor_t = search_start + (burst_offset / self.sr_orig)
-                    else:
+                    if is_vowel_target:
                         anchor_t = extract_start
-                        
-                    slice_start = anchor_t - (pre_anchor_ms / 1000.0)
-                    slice_end = anchor_t + (post_anchor_ms / 1000.0)
+                        slice_start = anchor_t
+                        slice_end = anchor_t + 0.060
+                    else:
+                        if extract_ph in burst_anchors:
+                            search_start = max(0, extract_start - 0.050)
+                            search_end = next_start
+                            start_idx = int(search_start * self.sr_orig)
+                            end_idx = int(search_end * self.sr_orig)
+                            search_audio = audio[start_idx:end_idx]
+                            if len(search_audio) == 0: continue
+                                
+                            audio_hp = librosa.effects.preemphasis(search_audio)
+                            frame_length = int(0.005 * self.sr_orig)
+                            hop_length = int(0.001 * self.sr_orig)
+                            rms = librosa.feature.rms(y=audio_hp, frame_length=frame_length, hop_length=hop_length)[0]
+                            rms_diff = np.diff(rms, prepend=rms[0])
+                            burst_offset = np.argmax(rms_diff) * hop_length
+                            anchor_t = search_start + (burst_offset / self.sr_orig)
+                        else:
+                            anchor_t = extract_start
+                            
+                        slice_start = anchor_t - 0.020
+                        slice_end = anchor_t + 0.040
                     
                     start_idx = int(slice_start * self.sr_orig)
                     end_idx = int(slice_end * self.sr_orig)
                     
                     if start_idx >= 0 and end_idx <= len(audio):
                         c_audio = audio[start_idx:end_idx]
-                        if len(c_audio) == int((pre_anchor_ms + post_anchor_ms) / 1000.0 * self.sr_orig):
+                        if len(c_audio) == int(0.060 * self.sr_orig):
                             c_deg = self.pipe.process(c_audio, self.sr_orig, hpf_cutoff=500.0)
                             X_deg.append(c_deg)
                             y_class.append(extract_class)
