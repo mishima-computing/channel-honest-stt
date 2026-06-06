@@ -126,7 +126,7 @@ class JVSCVExtractor:
             'ts': 'Unvoiced Affricate', 'ch': 'Unvoiced Affricate',
             'z': 'Voiced Affricate/Fricative', 'j': 'Voiced Affricate/Fricative',
             'm': 'Nasal', 'my': 'Nasal', 'n': 'Nasal', 'ny': 'Nasal',
-            'r': 'Flap', 'ry': 'Flap'
+            'r': 'Voiced Plosive', 'ry': 'Voiced Plosive'
         }
         vowels = ['a', 'i', 'u', 'e', 'o']
         
@@ -220,7 +220,7 @@ class JVSCVExtractor:
             'ts': 'Unvoiced Affricate', 'ch': 'Unvoiced Affricate',
             'z': 'Voiced Affricate/Fricative', 'j': 'Voiced Affricate/Fricative',
             'm': 'Nasal', 'my': 'Nasal', 'n': 'Nasal', 'ny': 'Nasal',
-            'r': 'Flap', 'ry': 'Flap'
+            'r': 'Voiced Plosive', 'ry': 'Voiced Plosive'
         }
         vowels = ['a', 'i', 'u', 'e', 'o']
         
@@ -289,6 +289,87 @@ class JVSCVExtractor:
                                 meta.append({'speaker': speaker, 'file': lab_file})
 
         return X_deg, y_class, meta
+
+    def extract_clean_diagnostic_features(self, speakers, target_type='vowel', cons_pre_ms=80.0, vowel_dur_ms=80.0):
+        """
+        Extracts CLEAN 24kHz audio chunks for Level 2 noise injection tests.
+        Returns: X_clean_24k, y_class, meta
+        """
+        X_clean = []
+        y_class = []
+        meta = []
+        
+        manner_map = {
+            'p': 'Unvoiced Plosive', 'py': 'Unvoiced Plosive', 't': 'Unvoiced Plosive', 'k': 'Unvoiced Plosive', 'ky': 'Unvoiced Plosive',
+            'ts': 'Unvoiced Plosive', 'ch': 'Unvoiced Plosive', # Merged
+            'b': 'Voiced Plosive', 'by': 'Voiced Plosive', 'd': 'Voiced Plosive', 'g': 'Voiced Plosive', 'gy': 'Voiced Plosive',
+            'z': 'Voiced Plosive', 'j': 'Voiced Plosive', # Merged
+            's': 'Unvoiced Fricative', 'sh': 'Unvoiced Fricative', 'h': 'Unvoiced Fricative', 'hy': 'Unvoiced Fricative', 'f': 'Unvoiced Fricative',
+            'm': 'Nasal', 'my': 'Nasal', 'n': 'Nasal', 'ny': 'Nasal',
+            'r': 'Voiced Plosive', 'ry': 'Voiced Plosive'
+        }
+        vowels = ['a', 'i', 'u', 'e', 'o']
+        
+        for speaker in speakers:
+            wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
+            lab_speaker_dir = os.path.join(self.lab_dir, speaker)
+            
+            if not os.path.exists(wav_dir) or not os.path.exists(lab_speaker_dir): continue
+                
+            for lab_file in os.listdir(lab_speaker_dir):
+                if not lab_file.endswith('.lab'): continue
+                lab_path = os.path.join(lab_speaker_dir, lab_file)
+                wav_path = os.path.join(wav_dir, lab_file.replace('.lab', '.wav'))
+                if not os.path.exists(wav_path): continue
+                    
+                phonemes = self.parse_lab_file(lab_path)
+                import scipy.io.wavfile as wavfile
+                sr, audio = wavfile.read(wav_path)
+                if audio.dtype == np.int16:
+                    audio = audio.astype(np.float32) / 32768.0
+                
+                for i in range(1, len(phonemes)):
+                    ph = phonemes[i]
+                    prev_ph = phonemes[i-1]
+                    prev_prev_ph = phonemes[i-2] if i > 1 else None
+                    
+                    if target_type == 'consonant':
+                        if ph['phoneme'] in vowels and prev_ph['phoneme'] in manner_map:
+                            if prev_prev_ph is None or prev_prev_ph['phoneme'] in ['silB', 'sp', 'silE']:
+                                continue
+                            
+                            vowel_start = ph['start']
+                            slice_start = vowel_start - (cons_pre_ms / 1000.0)
+                            slice_end = vowel_start
+                            
+                            start_idx = int(slice_start * self.sr_orig)
+                            end_idx = int(slice_end * self.sr_orig)
+                            
+                            if start_idx >= 0 and end_idx <= len(audio):
+                                c_audio = audio[start_idx:end_idx]
+                                X_clean.append(c_audio)
+                                y_class.append(manner_map[prev_ph['phoneme']])
+                                meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': prev_ph['phoneme']})
+                                
+                    elif target_type == 'vowel':
+                        if ph['phoneme'] in vowels:
+                            if prev_ph['phoneme'] in ['silB', 'sp', 'silE']:
+                                continue
+                                
+                            vowel_start = ph['start']
+                            slice_start = vowel_start
+                            slice_end = vowel_start + (vowel_dur_ms / 1000.0)
+                            
+                            start_idx = int(slice_start * self.sr_orig)
+                            end_idx = int(slice_end * self.sr_orig)
+                            
+                            if start_idx >= 0 and end_idx <= len(audio):
+                                v_audio = audio[start_idx:end_idx]
+                                X_clean.append(v_audio)
+                                y_class.append(f"/{ph['phoneme']}/")
+                                meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': ph['phoneme']})
+
+        return X_clean, y_class, meta
 
     def extract_transient_burst_aligned(self, speakers, target_type='transient', burst_pre_ms=20.0, burst_post_ms=40.0):
         """
