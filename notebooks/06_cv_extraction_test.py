@@ -19,38 +19,54 @@ def main():
     target_vowel = 'a'
     
     print(f"Extracting CV syllables (Consonants: {target_consonants}, Vowel: {target_vowel})...")
-    X_clean, X_deg, y = extractor.extract_cv_syllables(speakers, target_consonants, target_vowel)
+    X_clean, X_deg, y, meta = extractor.extract_cv_syllables(speakers, target_consonants, target_vowel, pre_margin_ms=30.0, post_margin_ms=10.0)
     
     print(f"Extracted {len(y)} CV syllables in total.")
     if len(y) == 0:
-        print("No samples found. Check paths and mock data setup.")
+        print("No samples found. Check paths and dataset setup.")
         return
         
     feat_extractor = FeatureExtractor(sr=8000)
     
-    # Let's plot one example per consonant
+    # Plot one example per consonant
     plotted = set()
     fig, axes = plt.subplots(len(target_consonants), 2, figsize=(12, 3 * len(target_consonants)))
     
-    for sig_clean, sig_deg, label in zip(X_clean, X_deg, y):
+    for sig_clean, sig_deg, label, m in zip(X_clean, X_deg, y, meta):
         if label not in plotted:
             idx = target_consonants.index(label)
             
-            # Since sig_clean is 24kHz, let's just plot the Degraded features (8kHz)
+            # Since sig_clean is 24kHz, we plot the Degraded features (8kHz)
             # because the model only sees the degraded features.
             feat_deg = feat_extractor.extract_dynamic(sig_deg, target_frames=40)
             
             # Plot Degraded Waveform
             ax1 = axes[idx, 0] if len(target_consonants) > 1 else axes[0]
             t = np.arange(len(sig_deg)) / 8000.0
-            ax1.plot(t, sig_deg, color='blue')
-            ax1.set_title(f"Degraded Waveform: /{label}{target_vowel}/")
+            ax1.plot(t, sig_deg, color='blue', alpha=0.7)
+            
+            # Draw lab boundaries
+            ax1.axvline(x=m['cons_start_rel'], color='r', linestyle='--', label='Consonant Start')
+            ax1.axvline(x=m['vowel_start_rel'], color='g', linestyle='--', label='Vowel Start')
+            ax1.axvline(x=m['vowel_end_rel'], color='purple', linestyle='--', label='Vowel End')
+            
+            ax1.set_title(f"Degraded Waveform: /{label}{target_vowel}/ ({m['speaker']})")
             ax1.set_xlabel("Time (s)")
             ax1.set_ylabel("Amplitude")
+            if idx == 0:
+                ax1.legend(loc='upper right', fontsize='small')
             
             # Plot Degraded Log-Mel Spectrogram
             ax2 = axes[idx, 1] if len(target_consonants) > 1 else axes[1]
             im = ax2.imshow(feat_deg, aspect='auto', origin='lower', cmap='viridis')
+            
+            # Convert time to frame index for overlay (1 frame = 12.5ms? Librosa default hop is 512 at 8000Hz = 64ms. Actually default is 512. Let's calculate exactly)
+            # hop_length = 512 (default in librosa)
+            hop_sec = 512.0 / 8000.0
+            ax2.axvline(x=m['cons_start_rel'] / hop_sec, color='r', linestyle='--')
+            ax2.axvline(x=m['vowel_start_rel'] / hop_sec, color='g', linestyle='--')
+            ax2.axvline(x=m['vowel_end_rel'] / hop_sec, color='purple', linestyle='--')
+            
             ax2.set_title(f"Log-Mel Features (Phase 1): /{label}{target_vowel}/")
             ax2.set_xlabel("Frame Index")
             ax2.set_ylabel("Mel Bin (300-3400Hz)")

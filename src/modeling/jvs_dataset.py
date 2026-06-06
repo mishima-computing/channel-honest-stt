@@ -29,14 +29,17 @@ class JVSCVExtractor:
                     phonemes.append({'start': start, 'end': end, 'phoneme': ph})
         return phonemes
 
-    def extract_cv_syllables(self, speakers, target_consonants, target_vowel='a'):
+    def extract_cv_syllables(self, speakers, target_consonants, target_vowel='a', pre_margin_ms=30.0, post_margin_ms=10.0):
         """
         Scans the lab files for the specified speakers, extracts CV syllables
         matching (target_consonant + target_vowel), and applies Phase 1 degradation.
+        Includes a time margin (pre/post) to absorb alignment quantization errors.
+        Returns X_clean, X_deg, y, metadata.
         """
         X_clean = []
         X_deg = []
         y = []
+        meta = []
         
         for speaker in speakers:
             wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
@@ -69,10 +72,15 @@ class JVSCVExtractor:
                     
                     if ph1['phoneme'] in target_consonants and ph2['phoneme'] == target_vowel:
                         start_time = ph1['start']
+                        vowel_start = ph2['start']
                         end_time = ph2['end']
                         
-                        start_idx = int(start_time * self.sr_orig)
-                        end_idx = int(end_time * self.sr_orig)
+                        # Apply Margins
+                        slice_start = max(0.0, start_time - (pre_margin_ms / 1000.0))
+                        slice_end = min(len(audio) / self.sr_orig, end_time + (post_margin_ms / 1000.0))
+                        
+                        start_idx = int(slice_start * self.sr_orig)
+                        end_idx = int(slice_end * self.sr_orig)
                         
                         # Extract clean CV syllable
                         cv_audio = audio[start_idx:end_idx]
@@ -83,5 +91,13 @@ class JVSCVExtractor:
                         X_clean.append(cv_audio)
                         X_deg.append(cv_deg)
                         y.append(ph1['phoneme']) # Label by consonant
+                        meta.append({
+                            'speaker': speaker,
+                            'file': lab_file,
+                            'slice_start': slice_start,
+                            'cons_start_rel': start_time - slice_start,
+                            'vowel_start_rel': vowel_start - slice_start,
+                            'vowel_end_rel': end_time - slice_start
+                        })
                         
-        return X_clean, X_deg, y
+        return X_clean, X_deg, y, meta
