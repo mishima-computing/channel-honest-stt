@@ -12,12 +12,17 @@ class DegradationPipeline:
     def downsample(self, x, orig_sr):
         """
         [1] 8kHzへのダウンサンプリング
+        折り返し雑音（エイリアシング）を防ぐため、内部でローパスフィルタを適用する
+        ポリフェーズリサンプリング（resample_poly）を使用する。
         """
         if orig_sr == self.target_sr:
             return x
-        # 簡易的なリサンプリング。実運用ではアンチエイリアシングフィルタを確実に効かせる。
-        num_samples = int(len(x) * float(self.target_sr) / orig_sr)
-        return signal.resample(x, num_samples)
+        # 共通の最大公約数でアップ/ダウンレートを計算
+        import math
+        gcd = math.gcd(orig_sr, self.target_sr)
+        up = self.target_sr // gcd
+        down = orig_sr // gcd
+        return signal.resample_poly(x, up, down)
 
     def _ulaw_compress(self, x, mu=255.0):
         """

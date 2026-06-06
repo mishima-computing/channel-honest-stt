@@ -20,8 +20,18 @@ class FormantSynthesizer:
         # 単純なインパルス列
         source = np.zeros_like(t)
         pulse_indices = np.arange(0, len(t), int(self.sample_rate * pulse_period)).astype(int)
+        # Ensure we don't go out of bounds
+        pulse_indices = pulse_indices[pulse_indices < len(t)]
         source[pulse_indices] = 1.0
         
+        return t, source
+
+    def generate_noise_source(self, duration):
+        """
+        無声音（摩擦音 s, h 等）の音源に相当するホワイトノイズを生成する。
+        """
+        t = np.arange(0, duration, 1.0 / self.sample_rate)
+        source = np.random.normal(0, 1, len(t))
         return t, source
 
     def apply_formant_filter(self, x, f_center, bandwidth):
