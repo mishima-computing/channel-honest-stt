@@ -67,8 +67,9 @@ class MusanInjector:
         for cat in self.categories:
             if cat not in self._files:
                 raise ValueError(f"Unknown MUSAN category: {cat!r}")
-            if not self._files[cat]:
-                pass # Delay check until used
+                
+        # Preload buffers
+        self._buffers = {}
 
     @staticmethod
     def _index_wavs(root):
@@ -80,40 +81,68 @@ class MusanInjector:
         audio, _ = librosa.load(path, sr=sr, mono=True)
         return audio.astype(np.float32)
 
-    def _fit_length(self, noise, length):
-        if len(noise) < length: noise = np.tile(noise, int(np.ceil(length / len(noise))))
-        if len(noise) > length:
-            start = self.rng.randint(0, len(noise) - length + 1)
-            noise = noise[start:start + length]
-        return noise
-
-    def _make_music(self, length, sr):
-        path = self._files['music'][self.rng.randint(len(self._files['music']))]
-        return self._fit_length(self._load(path, sr), length)
-
-    def _make_babble(self, length, sr):
-        lo, hi = self.babble_num_speakers
-        files = self._files['babble']
-        n = min(self.rng.randint(lo, hi + 1), len(files))
-        idx = self.rng.choice(len(files), size=n, replace=False)
-        babble = np.zeros(length, dtype=np.float32)
-        for i in idx:
-            spk = self._fit_length(self._load(files[i], sr), length)
-            rms = np.sqrt(np.mean(spk ** 2))
-            if rms > 0: spk = spk / rms
-            babble += spk
-        return babble
+    def preload(self, sr, duration_sec=300):
+        # Preload 5 minutes of concatenated noise per category to speed up sampling
+        print(f"Preloading {duration_sec}s of MUSAN noise per category...")
+        target_len = int(sr * duration_sec)
+        
+        if 'music' in self.categories:
+            buf = []
+            while sum(len(x) for x in buf) < target_len:
+                path = self.rng.choice(self._files['music'])
+                buf.append(self._load(path, sr))
+            self._buffers['music'] = np.concatenate(buf)
+            
+        if 'babble' in self.categories:
+            # Generate babble mix
+            buf = np.zeros(target_len, dtype=np.float32)
+            lo, hi = self.babble_num_speakers
+            n = min(self.rng.randint(lo, hi + 1), len(self._files['babble']))
+            idx = self.rng.choice(len(self._files['babble']), size=n, replace=False)
+            for i in idx:
+                spk_buf = []
+                while sum(len(x) for x in spk_buf) < target_len:
+                    path = self.rng.choice(self._files['babble'])
+                    spk_buf.append(self._load(path, sr))
+                spk = np.concatenate(spk_buf)[:target_len]
+                rms = np.sqrt(np.mean(spk ** 2))
+                if rms > 0: spk = spk / rms
+                buf += spk
+            self._buffers['babble'] = buf
+            
+        print("MUSAN Preload complete.")
 
     def sample_noise(self, length, sr, category=None):
         if category is None: category = self.categories[self.rng.randint(len(self.categories))]
-        if not self._files[category]:
-             self._files = {
-                'music': self._index_wavs(os.path.join(self.musan_root, 'music')),
-                'babble': self._index_wavs(os.path.join(self.musan_root, 'speech')),
-             }
-        if not self._files[category]: raise FileNotFoundError(f"No files for {category}")
-        if category == 'music': return self._make_music(length, sr)
-        if category == 'babble': return self._make_babble(length, sr)
+        
+        if category in self._buffers:
+            # Fast slice from preloaded buffer
+            buf = self._buffers[category]
+            start = self.rng.randint(0, len(buf) - length + 1)
+            return buf[start:start+length]
+        else:
+            # Fallback to slow load
+            if category == 'music': 
+                path = self.rng.choice(self._files['music'])
+                noise = self._load(path, sr)
+            else:
+                lo, hi = self.babble_num_speakers
+                n = min(self.rng.randint(lo, hi + 1), len(self._files['babble']))
+                idx = self.rng.choice(len(self._files['babble']), size=n, replace=False)
+                noise = np.zeros(length, dtype=np.float32)
+                for i in idx:
+                    spk = self._load(self._files['babble'][i], sr)
+                    if len(spk) < length: spk = np.tile(spk, int(np.ceil(length / len(spk))))
+                    start = self.rng.randint(0, len(spk) - length + 1)
+                    spk = spk[start:start+length]
+                    rms = np.sqrt(np.mean(spk ** 2))
+                    if rms > 0: spk = spk / rms
+                    noise += spk
+                return noise
+                
+            if len(noise) < length: noise = np.tile(noise, int(np.ceil(length / len(noise))))
+            start = self.rng.randint(0, len(noise) - length + 1)
+            return noise[start:start + length]
 
     def inject(self, signal, sr, snr_db, category=None):
         signal = np.asarray(signal, dtype=np.float32)
