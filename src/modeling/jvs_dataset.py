@@ -518,3 +518,109 @@ class JVSCVExtractor:
                             meta.append({'speaker': speaker, 'file': lab_file})
 
         return X_deg, y_class, meta
+
+    def extract_unified_features(self, speakers, target_type='all', pre_anchor_ms=20.0, post_anchor_ms=40.0):
+        """
+        Extracts a unified fixed-length window (e.g. [-20ms, +40ms]) for all 9 classes.
+        Anchors:
+        - Burst anchor for plosives/affricates (p, t, k, ts, ch, b, d, g).
+        - Label anchor for continuous sounds (s, sh, h, f, m, n, N, r, z, j, a, i, u, e, o).
+        Returns X_deg, y_class, meta.
+        """
+        import librosa
+        X_deg = []
+        y_class = []
+        meta = []
+        
+        manner_map = {
+            'p': 'Unvoiced Plosive', 'py': 'Unvoiced Plosive', 't': 'Unvoiced Plosive', 'k': 'Unvoiced Plosive', 'ky': 'Unvoiced Plosive',
+            'ts': 'Unvoiced Plosive', 'ch': 'Unvoiced Plosive',
+            'b': 'Voiced Plosive', 'by': 'Voiced Plosive', 'd': 'Voiced Plosive', 'g': 'Voiced Plosive', 'gy': 'Voiced Plosive',
+            'z': 'Voiced Plosive', 'j': 'Voiced Plosive',
+            'r': 'Voiced Plosive', 'ry': 'Voiced Plosive',
+            's': 'Unvoiced Fricative', 'sh': 'Unvoiced Fricative', 'h': 'Unvoiced Fricative', 'hy': 'Unvoiced Fricative', 'f': 'Unvoiced Fricative',
+            'm': 'Nasal', 'my': 'Nasal', 'n': 'Nasal', 'ny': 'Nasal', 'N': 'Nasal'
+        }
+        vowels = ['a', 'i', 'u', 'e', 'o']
+        
+        burst_anchors = ['p', 'py', 't', 'k', 'ky', 'b', 'by', 'd', 'g', 'gy', 'ts', 'ch']
+        
+        for speaker in speakers:
+            wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
+            lab_speaker_dir = os.path.join(self.lab_dir, speaker)
+            
+            if not os.path.exists(wav_dir) or not os.path.exists(lab_speaker_dir): continue
+                
+            for lab_file in os.listdir(lab_speaker_dir):
+                if not lab_file.endswith('.lab'): continue
+                lab_path = os.path.join(lab_speaker_dir, lab_file)
+                wav_path = os.path.join(wav_dir, lab_file.replace('.lab', '.wav'))
+                if not os.path.exists(wav_path): continue
+                    
+                phonemes = self.parse_lab_file(lab_path)
+                sr, audio = wavfile.read(wav_path)
+                if audio.dtype == np.int16:
+                    audio = audio.astype(np.float32) / 32768.0
+                
+                for i in range(1, len(phonemes)):
+                    ph = phonemes[i]
+                    ph_name = ph['phoneme']
+                    prev_ph_name = phonemes[i-1]['phoneme'] if i > 0 else None
+                    
+                    # Target logic: if target_type == 'all', we extract consonants (when followed by vowel) and vowels
+                    is_valid_consonant = ph_name in vowels and prev_ph_name in manner_map
+                    is_valid_vowel = ph_name in vowels and prev_ph_name not in ['silB', 'sp', 'silE']
+                    
+                    extract_ph = None
+                    extract_class = None
+                    extract_start = None
+                    next_start = None
+                    
+                    if (target_type in ['all', 'consonant']) and is_valid_consonant:
+                        extract_ph = prev_ph_name
+                        extract_class = manner_map[prev_ph_name]
+                        extract_start = phonemes[i-1]['start']
+                        next_start = ph['start']
+                    elif (target_type in ['all', 'vowel']) and is_valid_vowel:
+                        extract_ph = ph_name
+                        extract_class = f"/{ph_name}/"
+                        extract_start = ph['start']
+                        next_start = phonemes[i+1]['start'] if i+1 < len(phonemes) else ph['end']
+                        
+                    if extract_ph is None:
+                        continue
+                        
+                    if extract_ph in burst_anchors:
+                        # Find burst
+                        search_start = max(0, extract_start - 0.050)
+                        search_end = next_start
+                        start_idx = int(search_start * self.sr_orig)
+                        end_idx = int(search_end * self.sr_orig)
+                        search_audio = audio[start_idx:end_idx]
+                        if len(search_audio) == 0: continue
+                            
+                        audio_hp = librosa.effects.preemphasis(search_audio)
+                        frame_length = int(0.005 * self.sr_orig)
+                        hop_length = int(0.001 * self.sr_orig)
+                        rms = librosa.feature.rms(y=audio_hp, frame_length=frame_length, hop_length=hop_length)[0]
+                        rms_diff = np.diff(rms, prepend=rms[0])
+                        burst_offset = np.argmax(rms_diff) * hop_length
+                        anchor_t = search_start + (burst_offset / self.sr_orig)
+                    else:
+                        anchor_t = extract_start
+                        
+                    slice_start = anchor_t - (pre_anchor_ms / 1000.0)
+                    slice_end = anchor_t + (post_anchor_ms / 1000.0)
+                    
+                    start_idx = int(slice_start * self.sr_orig)
+                    end_idx = int(slice_end * self.sr_orig)
+                    
+                    if start_idx >= 0 and end_idx <= len(audio):
+                        c_audio = audio[start_idx:end_idx]
+                        if len(c_audio) == int((pre_anchor_ms + post_anchor_ms) / 1000.0 * self.sr_orig):
+                            c_deg = self.pipe.process(c_audio, self.sr_orig, hpf_cutoff=500.0)
+                            X_deg.append(c_deg)
+                            y_class.append(extract_class)
+                            meta.append({'speaker': speaker, 'file': lab_file, 'phoneme': extract_ph, 'anchor_t': anchor_t})
+
+        return X_deg, y_class, meta
