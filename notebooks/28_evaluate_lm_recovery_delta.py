@@ -89,8 +89,15 @@ def evaluate_delta(answer_file, pred_file):
         
     print("\n※ Note: Delta = (Clean Upper Bound - Above Accuracy)")
 
+import sys
+
 if __name__ == '__main__':
     base_dir = os.path.dirname(__file__)
-    ans_path = os.path.join(base_dir, 'blind_answers.txt')
-    pred_path = os.path.join(base_dir, 'llm_predictions.txt')
+    if len(sys.argv) >= 3:
+        ans_path = sys.argv[1]
+        pred_path = sys.argv[2]
+    else:
+        ans_path = os.path.join(base_dir, 'blind_answers.txt')
+        pred_path = os.path.join(base_dir, 'llm_predictions.txt')
+        
     evaluate_delta(ans_path, pred_path)
