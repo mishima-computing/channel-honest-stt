@@ -3,14 +3,19 @@ import pandas as pd
 
 def generate_prompts_from_csv(csv_path, threshold, output_path):
     df = pd.read_csv(csv_path)
+    df['token_idx'] = df['token_idx'].astype(int)
     
-    # Sort just in case
-    df = df.sort_values(['sentence_id', 'token_idx'])
+    # Create a unique ID for each actual audio file by detecting when token_idx resets to 0
+    run_ids = (df['token_idx'] == 0).cumsum()
+    df['run_id'] = run_ids
+    
+    # Sort by run_id and token_idx
+    df = df.sort_values(['run_id', 'token_idx'])
     
     prompts = {}
     
     for _, row in df.iterrows():
-        sid = row['sentence_id']
+        sid = f"{row['sentence_id']}_run{row['run_id']}"
         if sid not in prompts:
             prompts[sid] = []
             

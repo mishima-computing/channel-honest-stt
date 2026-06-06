@@ -1,0 +1,42 @@
+Model: google/gemma-4-31b
+
+[Sentence 1 | ID: VOICEACTRESS100_055_run1]
+Masked: o <Voiced_Plosive?> i? <Unvoiced_Plosive?> e? <Nasal> i? <Voiced_Plosive?> a <Unvoiced_Fricative?> o? <Nasal?> <Unvoiced_Plosive?> a <Nasal> o <Voiced_Plosive?> u? a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a? <Nasal> <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> o?
+Output: 
+
+[Sentence 2 | ID: VOICEACTRESS100_015_run2]
+Masked: i <Nasal?> <Unvoiced_Plosive?> e <Voiced_Plosive?> o <Nasal> <Nasal?> o <Voiced_Plosive?> <Nasal> <Unvoiced_Plosive> u? <Nasal?> a <Nasal> i? <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a? <Voiced_Plosive?> i? <Unvoiced_Plosive?> i? i <Unvoiced_Plosive?> a?
+Output: 
+
+[Sentence 3 | ID: VOICEACTRESS100_026_run3]
+Masked: <Unvoiced_Plosive?> e <Voiced_Plosive?> a o? <Voiced_Plosive?> <Unvoiced_Plosive?> <Unvoiced_Plosive?> <Unvoiced_Plosive?> <Nasal?> a? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> a u? <Nasal> i? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> e? a? <Voiced_Plosive?> u?
+Output: 
+
+[Sentence 4 | ID: VOICEACTRESS100_061_run4]
+Masked: <Unvoiced_Plosive?> a? i <Unvoiced_Fricative?> o? <Unvoiced_Plosive?> <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a? <Nasal?> a <Unvoiced_Plosive?> u <Unvoiced_Fricative?> <Unvoiced_Fricative?> u? <Unvoiced_Plosive?> o <Nasal?> a <Unvoiced_Fricative?> a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a? <Nasal> a <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> o <Unvoiced_Plosive?> <Unvoiced_Plosive?> <Unvoiced_Fricative?> o? <Unvoiced_Plosive?> i <Nasal?> o <Nasal?> a <Unvoiced_Plosive?> a i <Unvoiced_Plosive?> e <Voiced_Plosive?> i <Voiced_Plosive?> <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> <Unvoiced_Fricative?> e? a <Nasal?> a?
+Output: 
+
+[Sentence 5 | ID: VOICEACTRESS100_082_run5]
+Masked: <Unvoiced_Plosive?> <Nasal?> u <Voiced_Plosive?> a <Unvoiced_Fricative?> <Voiced_Plosive?> o? u? <Nasal?> a <Voiced_Plosive?> u? <Unvoiced_Plosive> i? i? <Voiced_Plosive?> o? a <Unvoiced_Plosive?> i <Unvoiced_Plosive?> <Unvoiced_Plosive?> a? <Nasal?> a o? <Voiced_Plosive?> <Unvoiced_Plosive?> e? <Nasal?> i <Nasal?> o? <Unvoiced_Plosive?> e? <Unvoiced_Fricative> i? <Voiced_Plosive?> <Nasal?> i? <Unvoiced_Fricative?> i <Nasal> <Nasal?> u? <Voiced_Plosive?> a? u? <Voiced_Plosive?> <Nasal> i
+Output: 
+
+[Sentence 6 | ID: VOICEACTRESS100_051_run6]
+Masked: <Unvoiced_Plosive?> e <Nasal?> <Unvoiced_Plosive?> o <Nasal?> o <Voiced_Plosive?> <Nasal?> a <Unvoiced_Plosive?> a? a <Unvoiced_Plosive?> e? <Voiced_Plosive?> <Voiced_Plosive?> u? i? <Unvoiced_Plosive?> i? <Unvoiced_Plosive?> o <Unvoiced_Fricative?> o? <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> o? <Nasal> <Voiced_Plosive?> e? <Unvoiced_Plosive?> a <Nasal?> a <Unvoiced_Plosive?>
+Output: 
+
+[Sentence 7 | ID: VOICEACTRESS100_029_run7]
+Masked: <Unvoiced_Plosive?> e? <Unvoiced_Plosive?> a e? <Nasal?> o <Unvoiced_Plosive> o? <Unvoiced_Plosive?> o? <Nasal?> a? <Nasal?> i <Unvoiced_Plosive?> e? <Unvoiced_Fricative?> i <Unvoiced_Plosive?> o? <Unvoiced_Plosive?> i? <Voiced_Plosive?> a? <Unvoiced_Plosive?> i? <Unvoiced_Plosive> <Voiced_Plosive?> <Unvoiced_Plosive?> o a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a e? <Voiced_Plosive?> u? <Nasal?> a <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> e? <Unvoiced_Plosive> u <Unvoiced_Plosive?> e? <Voiced_Plosive?> u? <Unvoiced_Plosive?> o a a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a i i <Voiced_Plosive?> <Voiced_Plosive?> <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a <Nasal> o? <Unvoiced_Plosive?> e?
+Output: 
+
+[Sentence 8 | ID: VOICEACTRESS100_043_run8]
+Masked: <Unvoiced_Plosive?> <Unvoiced_Plosive> <Voiced_Plosive?> o? <Voiced_Plosive?> a <Unvoiced_Plosive> e <Voiced_Plosive?> e? <Unvoiced_Plosive?> e? <Nasal?> o <Nasal?> <Nasal> i <Unvoiced_Plosive> o i? o? <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> a? <Voiced_Plosive?> a? <Nasal?> a a <Unvoiced_Plosive?> i? <Nasal?> o <Unvoiced_Fricative?> <Unvoiced_Plosive?> <Nasal> o <Unvoiced_Plosive> a <Unvoiced_Plosive> u? <Unvoiced_Fricative?> u <Unvoiced_Plosive> u <Unvoiced_Plosive?> e? o? <Voiced_Plosive?> u <Unvoiced_Plosive?> o? <Unvoiced_Plosive?> a <Unvoiced_Plosive?> a? <Unvoiced_Plosive?> e? e? <Voiced_Plosive?> a?
+Output: 
+
+[Sentence 9 | ID: VOICEACTRESS100_056_run9]
+Masked: <Unvoiced_Plosive?> o? <Unvoiced_Plosive?> o <Voiced_Plosive?> o? <Unvoiced_Plosive?> a i <Nasal?> i <Unvoiced_Plosive?> i? <Unvoiced_Plosive?> u? <Unvoiced_Fricative?> a <Nasal?> u? <Nasal?> o? <Unvoiced_Plosive?> <Nasal> o? <Unvoiced_Plosive?> <Unvoiced_Fricative?> i? <Nasal?> a? <Voiced_Plosive?> i? <Unvoiced_Plosive?> a <Nasal?> a? <Nasal> o? <Voiced_Plosive?> <Nasal> <Unvoiced_Plosive?> <Unvoiced_Plosive?> i? <Nasal> o? <Unvoiced_Plosive?> a <Unvoiced_Fricative?> a? i? <Unvoiced_Plosive?> i <Voiced_Plosive?> i <Unvoiced_Plosive?> a a <Nasal?> i? <Unvoiced_Fricative?> a
+Output: 
+
+[Sentence 10 | ID: VOICEACTRESS100_005_run10]
+Masked: <Unvoiced_Plosive?> i? <Voiced_Plosive?> e? <Nasal?> <Nasal?> <Unvoiced_Plosive?> <Unvoiced_Plosive?> <Nasal?> e? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> o? <Unvoiced_Plosive?> i? <Nasal> e? <Unvoiced_Plosive?> i <Voiced_Plosive?> <Voiced_Plosive?> u? a <Unvoiced_Plosive?> <Nasal> u? <Nasal?> <Voiced_Plosive?> o <Unvoiced_Plosive?> a? <Nasal> o? <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> o <Unvoiced_Plosive?> u? <Unvoiced_Fricative?> e? i? <Unvoiced_Plosive> e <Unvoiced_Plosive> i? <Nasal> i? <Voiced_Plosive?> <Nasal?> <Unvoiced_Plosive?> <Unvoiced_Plosive?> u? o? <Voiced_Plosive?> i <Nasal> <Voiced_Plosive?> i? <Unvoiced_Plosive?> o? <Unvoiced_Fricative?> o? <Unvoiced_Plosive?> e? <Nasal> i <Unvoiced_Plosive?> u? <Unvoiced_Plosive?> a <Voiced_Plosive?> i? <Unvoiced_Plosive?> i u? <Unvoiced_Plosive?> i
+Output: 
+
