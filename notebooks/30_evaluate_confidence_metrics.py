@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_calibration_curve(df, output_path):
+def plot_calibration_curve(df, output_path, title_suffix):
     bins = np.linspace(0.0, 1.0, 11)
     df['prob_bin'] = pd.cut(df['max_prob'], bins=bins, labels=False, include_lowest=True)
     
@@ -35,12 +35,12 @@ def plot_calibration_curve(df, output_path):
     ax2.set_ylabel('Number of Samples')
     
     fig.legend(loc='upper left', bbox_to_anchor=(0.15, 0.85))
-    plt.title('Confidence Calibration Curve (MUSAN Babble 0dB)')
+    plt.title(f'Confidence Calibration Curve {title_suffix}')
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
 
-def plot_tradeoff_curve(df, output_path):
+def plot_tradeoff_curve(df, output_path, title_suffix):
     thresholds = np.linspace(0.0, 1.0, 101)
     conf_error_rates = []
     flow_volumes = []
@@ -63,10 +63,9 @@ def plot_tradeoff_curve(df, output_path):
     plt.plot(flow_volumes, conf_error_rates, 'r-', linewidth=2)
     plt.xlabel('Confirmation Flow Volume (% of tokens)')
     plt.ylabel('Confident Error Rate')
-    plt.title('Tradeoff: Confirmation Flow vs Confident Error Rate')
+    plt.title(f'Tradeoff: Confirmation Flow vs Confident Error Rate {title_suffix}')
     plt.grid(True)
     
-    # Annotate some thresholds
     for t_val in [0.5, 0.7, 0.8, 0.9]:
         idx = np.argmin(np.abs(thresholds - t_val))
         plt.plot(flow_volumes[idx], conf_error_rates[idx], 'ko')
@@ -77,60 +76,69 @@ def plot_tradeoff_curve(df, output_path):
     plt.savefig(output_path)
     plt.close()
     
-def plot_uv_fricative_false_positives(df, output_path):
-    # Only consonants
+def plot_uv_fricative_false_positives(df, output_path, title_suffix):
     df_cons = df[~df['is_vowel']]
-    
-    # False positives for Unvoiced Fricative
     uvf_fp = df_cons[(df_cons['pred_label'] == 'Unvoiced_Fricative') & (df_cons['true_label'] != 'Unvoiced_Fricative')]
     
     plt.figure(figsize=(8, 6))
-    plt.hist(uvf_fp['max_prob'], bins=np.linspace(0, 1, 21), edgecolor='black', alpha=0.7)
-    plt.axvline(uvf_fp['max_prob'].mean(), color='r', linestyle='dashed', linewidth=2, label=f"Mean: {uvf_fp['max_prob'].mean():.2f}")
     
+    if len(uvf_fp) > 0:
+        plt.hist(uvf_fp['max_prob'], bins=np.linspace(0, 1, 21), edgecolor='black', alpha=0.7)
+        plt.axvline(uvf_fp['max_prob'].mean(), color='r', linestyle='dashed', linewidth=2, label=f"Mean: {uvf_fp['max_prob'].mean():.2f}")
+    else:
+        plt.text(0.5, 0.5, 'No False Positives', ha='center', va='center')
+        
     plt.xlabel('Confidence (Max Probability)')
     plt.ylabel('Count')
-    plt.title('Confidence Distribution of <Unvoiced_Fricative> False Positives')
+    plt.title(f'Confidence Dist of <Unvoiced_Fricative> FPs {title_suffix}')
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
     
-    print(f"\n[Unvoiced Fricative False Positives Analysis]")
+    print(f"\n[Unvoiced Fricative False Positives Analysis {title_suffix}]")
     print(f"Total false positives: {len(uvf_fp)}")
-    print(f"Mean confidence: {uvf_fp['max_prob'].mean():.3f}")
-    high_conf_fp = len(uvf_fp[uvf_fp['max_prob'] >= 0.7])
-    print(f"False positives with >= 0.7 confidence: {high_conf_fp} ({high_conf_fp/len(uvf_fp)*100:.1f}%)")
-    
-    # Also look at what they actually were
-    print("\nTrue labels of these false positives:")
-    print(uvf_fp['true_label'].value_counts())
+    if len(uvf_fp) > 0:
+        print(f"Mean confidence: {uvf_fp['max_prob'].mean():.3f}")
+        high_conf_fp = len(uvf_fp[uvf_fp['max_prob'] >= 0.7])
+        print(f"False positives with >= 0.7 confidence: {high_conf_fp} ({high_conf_fp/len(uvf_fp)*100:.1f}%)")
+        print("\nTrue labels of these false positives:")
+        print(uvf_fp['true_label'].value_counts())
+
+import sys
 
 def main():
-    base_dir = os.path.dirname(__file__)
-    csv_path = os.path.join(base_dir, 'e2e_predictions_0dB.csv')
-    
+    if len(sys.argv) > 1:
+        csv_path = sys.argv[1]
+        suffix = sys.argv[2] if len(sys.argv) > 2 else "Custom"
+    else:
+        base_dir = os.path.dirname(__file__)
+        csv_path = os.path.join(base_dir, 'e2e_predictions_0dB.csv')
+        suffix = "(0dB)"
+        
     if not os.path.exists(csv_path):
         print(f"File {csv_path} not found.")
         return
         
     df = pd.read_csv(csv_path)
-    # Normalize labels: replace spaces with underscores to match true_label format
     df['pred_label'] = df['pred_label'].astype(str).str.replace(' ', '_')
     df['true_label'] = df['true_label'].astype(str).str.replace(' ', '_')
-    print(f"Loaded {len(df)} predictions.")
+    print(f"Loaded {len(df)} predictions from {csv_path}.")
     
-    calib_path = os.path.join(base_dir, 'confidence_calibration.png')
-    plot_calibration_curve(df, calib_path)
+    base_dir = os.path.dirname(csv_path)
+    base_name = os.path.splitext(os.path.basename(csv_path))[0]
+    
+    calib_path = os.path.join(base_dir, f'{base_name}_calibration.png')
+    plot_calibration_curve(df, calib_path, suffix)
     print(f"Saved calibration curve to {calib_path}")
     
-    tradeoff_path = os.path.join(base_dir, 'confidence_tradeoff.png')
-    plot_tradeoff_curve(df, tradeoff_path)
+    tradeoff_path = os.path.join(base_dir, f'{base_name}_tradeoff.png')
+    plot_tradeoff_curve(df, tradeoff_path, suffix)
     print(f"Saved tradeoff curve to {tradeoff_path}")
     
-    fp_path = os.path.join(base_dir, 'uv_fricative_fp_dist.png')
-    plot_uv_fricative_false_positives(df, fp_path)
+    fp_path = os.path.join(base_dir, f'{base_name}_uv_fricative_fp.png')
+    plot_uv_fricative_false_positives(df, fp_path, suffix)
     print(f"Saved UV Fricative FP distribution to {fp_path}")
 
 if __name__ == '__main__':

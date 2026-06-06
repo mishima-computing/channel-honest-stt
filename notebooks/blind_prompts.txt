@@ -1,0 +1,32 @@
+=== LM Blind Recovery Test ===
+
+[Sentence 1]
+Masked: y u u <UV_FRIC> U <UV_PLOS> u <NASAL> a <NASAL> u u y o o <UV_PLOS> a a <UV_PLOS> a <UV_PLOS> i w a pau <V_PLOS> u <V_PLOS> e e v u <UV_FRIC> e N <V_PLOS> o pau <UV_PLOS> e e <V_PLOS> a <V_PLOS> o o y a pau <UV_FRIC> i i <UV_PLOS> u <UV_FRIC> e cl <V_PLOS> o <V_PLOS> e i pau <UV_PLOS> e e <V_PLOS> a <V_PLOS> o o <NASAL> a <V_PLOS> o <NASAL> i <UV_PLOS> u <V_PLOS> o i pau u <NASAL> i <V_PLOS> o i <NASAL> o <UV_PLOS> o o <UV_PLOS> u u <V_PLOS> e <UV_FRIC> U <UV_PLOS> o <V_PLOS> a N y a pau <UV_FRIC> o <UV_PLOS> e <V_PLOS> u o <V_PLOS> i y o o <UV_FRIC> I <UV_PLOS> a
+
+[Sentence 2]
+Masked: w a <UV_PLOS> a <UV_PLOS> I <UV_FRIC> i <NASAL> o <UV_FRIC> a N <V_PLOS> a <UV_PLOS> u y u e <NASAL> i pau u <UV_PLOS> u u <NASAL> o <UV_PLOS> u u o o o <UV_PLOS> u i <UV_FRIC> o o <UV_FRIC> a <V_PLOS> e <UV_PLOS> e pau w a <UV_PLOS> U <UV_FRIC> e e pau <UV_PLOS> I <UV_PLOS> u u <NASAL> i y a cl <UV_PLOS> e <UV_PLOS> I <UV_PLOS> a <UV_FRIC> u <V_PLOS> i N <UV_PLOS> o o pau <V_PLOS> e <V_PLOS> u <V_PLOS> e <V_PLOS> a <V_PLOS> u <V_PLOS> a pau u <UV_PLOS> u u <UV_FRIC> e N <UV_PLOS> a <V_PLOS> u <NASAL> a a <UV_PLOS> u <NASAL> o <NASAL> a <UV_PLOS> a <V_PLOS> e pau <NASAL> a <V_PLOS> o <NASAL> i <UV_PLOS> a <UV_PLOS> a <V_PLOS> u <UV_FRIC> o o <V_PLOS> a i <NASAL> a <NASAL> o <NASAL> o <V_PLOS> a <UV_PLOS> a <V_PLOS> i
+
+[Sentence 3]
+Masked: <NASAL> u u i N <V_PLOS> u <V_PLOS> a N <V_PLOS> o <UV_FRIC> u u w a pau <V_PLOS> u u <NASAL> u u o <V_PLOS> e e <UV_FRIC> U <UV_PLOS> o <UV_FRIC> I <UV_PLOS> a pau <UV_FRIC> i <V_PLOS> o i <UV_PLOS> u <V_PLOS> i i <NASAL> u <UV_FRIC> u u <UV_PLOS> u <V_PLOS> e a <V_PLOS> i pau <V_PLOS> o <UV_FRIC> U <UV_PLOS> o N <UV_PLOS> u <V_PLOS> a <NASAL> u <UV_PLOS> a u <V_PLOS> a a <UV_PLOS> o <NASAL> o y o <V_PLOS> a <V_PLOS> e <V_PLOS> u
+
+[Sentence 4]
+Masked: o cl <UV_PLOS> o <V_PLOS> e a <V_PLOS> u <UV_PLOS> o <NASAL> u <V_PLOS> o <V_PLOS> a pau <UV_PLOS> u u <UV_PLOS> u u <UV_FRIC> a o y o <V_PLOS> i pau <UV_PLOS> o <NASAL> a i <V_PLOS> o o i N <NASAL> i pau <UV_PLOS> i N <UV_PLOS> u u <UV_FRIC> a N <UV_FRIC> o o <UV_FRIC> a <V_PLOS> e <V_PLOS> u
+
+[Sentence 5]
+Masked: <UV_FRIC> o <UV_FRIC> I <UV_PLOS> e pau i N <V_PLOS> e <UV_PLOS> e N <V_PLOS> e N <UV_PLOS> o <UV_FRIC> i <NASAL> o pau <V_PLOS> o <UV_PLOS> U <UV_FRIC> a <UV_PLOS> o o <UV_FRIC> o o <V_PLOS> e e <V_PLOS> a <V_PLOS> u pau <UV_PLOS> u <V_PLOS> e <NASAL> i a <V_PLOS> i i <V_PLOS> u <UV_FRIC> a i y u u <UV_FRIC> u u <V_PLOS> o o <V_PLOS> u <UV_PLOS> i i <UV_PLOS> a a <NASAL> i e <V_PLOS> a <V_PLOS> a <V_PLOS> e <UV_PLOS> a
+
+[Sentence 6]
+Masked: <UV_FRIC> o <NASAL> o <UV_FRIC> o o <UV_FRIC> o o <UV_PLOS> o <UV_FRIC> I <UV_PLOS> a <UV_FRIC> I <UV_PLOS> o <V_PLOS> a <V_PLOS> a <V_PLOS> a pau <V_PLOS> o o <NASAL> a <UV_PLOS> u <NASAL> a N <NASAL> o <NASAL> i <UV_FRIC> I <UV_PLOS> a w a <V_PLOS> e <UV_PLOS> e i <V_PLOS> u
+
+[Sentence 7]
+Masked: <NASAL> o <V_PLOS> i <NASAL> a <V_PLOS> a <NASAL> o o i <UV_FRIC> i i <V_PLOS> u u <NASAL> u u w a pau <UV_PLOS> o i a o i <V_PLOS> o <NASAL> i pau <V_PLOS> u u <NASAL> u u <V_PLOS> i N o a <UV_FRIC> i <V_PLOS> a cl <UV_PLOS> a <V_PLOS> e <V_PLOS> a i N <NASAL> o pau <UV_PLOS> a cl <UV_PLOS> u <V_PLOS> u u <NASAL> u u <V_PLOS> e a <V_PLOS> u
+
+[Sentence 8]
+Masked: <V_PLOS> o o i N <V_PLOS> i i N <UV_PLOS> o <UV_FRIC> I <UV_PLOS> e pau <V_PLOS> a a N w e <V_PLOS> u w a pau <UV_PLOS> a <V_PLOS> i <UV_FRIC> o <V_PLOS> u <NASAL> i a <UV_FRIC> u u <NASAL> o pau <V_PLOS> e N <UV_PLOS> o o <UV_PLOS> a <NASAL> u u <NASAL> i <UV_FRIC> a N <UV_FRIC> e e <UV_FRIC> I <UV_PLOS> a
+
+[Sentence 9]
+Masked: <UV_PLOS> o <UV_PLOS> o <V_PLOS> o <V_PLOS> a pau e <V_PLOS> i y u <UV_FRIC> I <UV_PLOS> u <UV_PLOS> o o N w a pau <NASAL> u <NASAL> u <UV_PLOS> e e <NASAL> o <UV_FRIC> e e <UV_FRIC> i <NASAL> o <UV_PLOS> I <UV_PLOS> a <V_PLOS> u <NASAL> i pau <V_PLOS> e e <NASAL> e e <UV_PLOS> e e <V_PLOS> u <NASAL> o <UV_PLOS> a <UV_FRIC> i o pau <UV_PLOS> i <V_PLOS> i <UV_PLOS> a o <UV_FRIC> I <UV_PLOS> a
+
+[Sentence 10]
+Masked: i <UV_PLOS> a <NASAL> i w a pau <UV_PLOS> e N <UV_PLOS> e <UV_PLOS> i y o <V_PLOS> i <UV_PLOS> i N <UV_PLOS> u u y a <UV_PLOS> u o pau <V_PLOS> o o <NASAL> a <UV_PLOS> U <UV_PLOS> o o y o <UV_FRIC> u <V_PLOS> u <UV_PLOS> o <UV_PLOS> o <V_PLOS> e pau <UV_PLOS> i N <UV_PLOS> u u o o <UV_PLOS> o <NASAL> a u
+

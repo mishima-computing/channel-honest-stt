@@ -39,22 +39,28 @@ def generate_prompts_from_csv(csv_path, threshold, output_path):
             f.write(f"[Sentence {i+1} | ID: {sid}]\nMasked: {sentence_str}\n\n")
 
 def main():
+    import sys
     base_dir = os.path.dirname(__file__)
-    csv_path = os.path.join(base_dir, 'e2e_predictions_0dB.csv')
     
-    if not os.path.exists(csv_path):
-        print(f"File {csv_path} not found.")
-        return
+    files_to_process = ['e2e_predictions_10dB.csv', 'e2e_predictions_0dB.csv']
+    
+    for filename in files_to_process:
+        csv_path = os.path.join(base_dir, filename)
+        if not os.path.exists(csv_path):
+            print(f"File {csv_path} not found.")
+            continue
+            
+        base_name = os.path.splitext(filename)[0]
         
-    # Generate for T=0.7
-    out_07 = os.path.join(base_dir, 'e2e_blind_prompts_0dB_T0.7.txt')
-    generate_prompts_from_csv(csv_path, 0.7, out_07)
-    print(f"Saved T=0.7 prompts to {out_07}")
-    
-    # Generate for T=0.85
-    out_085 = os.path.join(base_dir, 'e2e_blind_prompts_0dB_T0.85.txt')
-    generate_prompts_from_csv(csv_path, 0.85, out_085)
-    print(f"Saved T=0.85 prompts to {out_085}")
+        # Generate for T=0.7
+        out_07 = os.path.join(base_dir, f'{base_name}_prompts_T0.7.txt')
+        generate_prompts_from_csv(csv_path, 0.7, out_07)
+        print(f"Saved T=0.7 prompts to {out_07}")
+        
+        # Generate for T=0.85
+        out_085 = os.path.join(base_dir, f'{base_name}_prompts_T0.85.txt')
+        generate_prompts_from_csv(csv_path, 0.85, out_085)
+        print(f"Saved T=0.85 prompts to {out_085}")
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,42 @@
+=== LM Blind Recovery Answers ===
+
+[Sentence 1]
+Original: 裕福なニューヨーカー達は、グレーヴセンド、競馬場や、シープシェッドベイ、競馬場などに集い、海沿いの高級レストランや、ホテルを利用した。
+Phonemes: y u u f U k u n a ny u u y o o k a a t a ch i w a pau g u r e e v u s e N d o pau k e e b a j o o y a pau sh i i p u sh e cl d o b e i pau k e e b a j o o n a d o n i ts u d o i pau u m i z o i n o k o o ky u u r e s U t o r a N y a pau h o t e r u o r i y o o sh I t a
+
+[Sentence 2]
+Original: 若き日の反逆ゆえに、宇宙の中央を追放されて、惑星、地球にやってきた主人公、ベルゼバブが、宇宙船カルナークのなかで、孫に語る壮大な物語。
+Phonemes: w a k a k I h i n o h a N gy a k u y u e n i pau u ch u u n o ch u u o o o ts u i h o o s a r e t e pau w a k U s e e pau ch I ky u u n i y a cl t e k I t a sh u j i N k o o pau b e r u z e b a b u g a pau u ch u u s e N k a r u n a a k u n o n a k a d e pau m a g o n i k a t a r u s o o d a i n a m o n o g a t a r i
+
+[Sentence 3]
+Original: ニューイングランド風は、牛乳をベースとした、白いクリームスープであり、ボストンクラムチャウダーとも呼ばれる。
+Phonemes: ny u u i N g u r a N d o f u u w a pau gy u u ny u u o b e e s U t o sh I t a pau sh i r o i k u r i i m u s u u p u d e a r i pau b o s U t o N k u r a m u ch a u d a a t o m o y o b a r e r u
+
+[Sentence 4]
+Original: 夫である小室が、救急車を呼び、都内病院に、緊急搬送される。
+Phonemes: o cl t o d e a r u k o m u r o g a pau ky u u ky u u sh a o y o b i pau t o n a i by o o i N n i pau k i N ky u u h a N s o o s a r e r u
+
+[Sentence 5]
+Original: そして、インデペンデント紙の、読者投票で選ぶ、プレミアリーグ最優秀ゴールキーパーに選ばれた。
+Phonemes: s o sh I t e pau i N d e p e N d e N t o sh i n o pau d o k U sh a t o o hy o o d e e r a b u pau p u r e m i a r i i g u s a i y u u sh u u g o o r u k i i p a a n i e r a b a r e t a
+
+[Sentence 6]
+Original: その飄々とした人柄が、老若男女に慕われている。
+Phonemes: s o n o hy o o hy o o t o sh I t a h I t o g a r a g a pau r o o ny a k u n a N ny o n i sh I t a w a r e t e i r u
+
+[Sentence 7]
+Original: 森永のおいしい牛乳は、濃い青色に、牛乳瓶をあしらったデザインの、パック牛乳である。
+Phonemes: m o r i n a g a n o o i sh i i gy u u ny u u w a pau k o i a o i r o n i pau gy u u ny u u b i N o a sh i r a cl t a d e z a i N n o pau p a cl k u gy u u ny u u d e a r u
+
+[Sentence 8]
+Original: 上院議員として、バーンウェルは、カリフォルニア州の、連邦加入に賛成した。
+Phonemes: j o o i N g i i N t o sh I t e pau b a a N w e r u w a pau k a r i f o r u n i a sh u u n o pau r e N p o o k a ny u u n i s a N s e e sh I t a
+
+[Sentence 9]
+Original: ところが、エリュシクトーンは、ニュムペーの制止も聞かずに、デーメーテールの樫を、切り倒した。
+Phonemes: t o k o r o g a pau e r i y u sh I k u t o o N w a pau ny u m u p e e n o s e e sh i m o k I k a z u n i pau d e e m e e t e e r u n o k a sh i o pau k i r i t a o sh I t a
+
+[Sentence 10]
+Original: 痛みは、点滴より鎮痛薬を、静脈投与することで、鎮痛を行う。
+Phonemes: i t a m i w a pau t e N t e k i y o r i ch i N ts u u y a k u o pau j o o my a k U t o o y o s u r u k o t o d e pau ch i N ts u u o o k o n a u
+

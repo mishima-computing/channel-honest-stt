@@ -25,9 +25,9 @@ def main():
     
     speakers = [f'jvs{i:03d}' for i in range(1, 11)]
     
-    print("Extracting unified 60ms [-20, +40] features for all 9 classes...")
-    # target_type='all' extracts both consonants and vowels using their respective anchors
-    X_deg_raw, y_labels, meta = extractor.extract_unified_features(speakers, target_type='all', pre_anchor_ms=20.0, post_anchor_ms=40.0)
+    print("Extracting dual window 60ms features for all 9 classes...")
+    # target_type='all' extracts both consonants and vowels using their respective dual anchors
+    X_deg_raw, y_labels, meta = extractor.extract_dual_window_features(speakers, target_type='all')
     
     print(f"Extracted {len(X_deg_raw)} total samples.")
     
@@ -65,17 +65,17 @@ def main():
     cm_norm = np.nan_to_num(cm_norm)
     
     acc = np.mean(y_test == y_pred)
-    print(f"\nUnified Window Baseline Accuracy: {acc:.2%}")
+    print(f"\nDual Window Baseline Accuracy: {acc:.2%}")
     for i, c in enumerate(target_classes):
         print(f"{c}: {cm_norm[i, i]:.1%}")
         
     fig, ax = plt.subplots(figsize=(10, 8))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=target_classes)
     disp.plot(cmap='Blues', ax=ax, xticks_rotation=45, values_format='.1%')
-    ax.set_title(f"Unified Window (60ms) - Clean Baseline (Acc: {acc:.2%})")
+    ax.set_title(f"Dual Window - Clean Baseline (Acc: {acc:.2%})")
     plt.tight_layout()
     
-    out_path = os.path.join(os.path.dirname(__file__), 'cm_unified_baseline.png')
+    out_path = os.path.join(os.path.dirname(__file__), 'cm_dual_baseline.png')
     plt.savefig(out_path, dpi=150)
     print(f"Saved CM to {out_path}")
 
