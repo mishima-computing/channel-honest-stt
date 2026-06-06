@@ -372,3 +372,68 @@ class JVSCVExtractor:
                             meta.append({'speaker': speaker, 'file': lab_file})
 
         return X_deg, y_class, meta
+
+    def extract_transient_vowel_anchor_80ms(self, speakers):
+        """
+        Extracts a fixed 80ms window [-80ms, 0ms] relative to the vowel anchor
+        specifically for the 4 transient classes to capture full friction without vowel absorption.
+        """
+        import librosa
+        X_deg = []
+        y_class = []
+        meta = []
+        
+        manner_map = {
+            'p': 'Unvoiced Plosive', 'py': 'Unvoiced Plosive', 't': 'Unvoiced Plosive', 'k': 'Unvoiced Plosive', 'ky': 'Unvoiced Plosive',
+            'b': 'Voiced Plosive', 'by': 'Voiced Plosive', 'd': 'Voiced Plosive', 'g': 'Voiced Plosive', 'gy': 'Voiced Plosive',
+            'ts': 'Unvoiced Affricate', 'ch': 'Unvoiced Affricate',
+            'z': 'Voiced Affricate/Fricative', 'j': 'Voiced Affricate/Fricative',
+        }
+        vowels = ['a', 'i', 'u', 'e', 'o']
+        
+        for speaker in speakers:
+            wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
+            lab_speaker_dir = os.path.join(self.lab_dir, speaker)
+            
+            if not os.path.exists(wav_dir) or not os.path.exists(lab_speaker_dir):
+                continue
+                
+            for lab_file in os.listdir(lab_speaker_dir):
+                if not lab_file.endswith('.lab'):
+                    continue
+                    
+                lab_path = os.path.join(lab_speaker_dir, lab_file)
+                wav_path = os.path.join(wav_dir, lab_file.replace('.lab', '.wav'))
+                if not os.path.exists(wav_path):
+                    continue
+                    
+                phonemes = self.parse_lab_file(lab_path)
+                sr, audio = wavfile.read(wav_path)
+                if audio.dtype == np.int16:
+                    audio = audio.astype(np.float32) / 32768.0
+                
+                for i in range(1, len(phonemes)):
+                    ph = phonemes[i]
+                    prev_ph = phonemes[i-1]
+                    prev_prev_ph = phonemes[i-2] if i > 1 else None
+                    
+                    if ph['phoneme'] in vowels and prev_ph['phoneme'] in manner_map:
+                        if prev_prev_ph is None or prev_prev_ph['phoneme'] in ['silB', 'sp', 'silE']:
+                            continue
+                            
+                        vowel_start = ph['start']
+                        # Extract [-80ms, 0ms]
+                        slice_start = vowel_start - 0.080
+                        slice_end = vowel_start
+                        
+                        start_idx = int(slice_start * self.sr_orig)
+                        end_idx = int(slice_end * self.sr_orig)
+                        
+                        if start_idx >= 0 and end_idx <= len(audio):
+                            c_audio = audio[start_idx:end_idx]
+                            c_deg = self.pipe.process(c_audio, self.sr_orig, hpf_cutoff=500.0)
+                            X_deg.append(c_deg)
+                            y_class.append(manner_map[prev_ph['phoneme']])
+                            meta.append({'speaker': speaker, 'file': lab_file})
+
+        return X_deg, y_class, meta
