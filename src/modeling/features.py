@@ -39,3 +39,22 @@ class FeatureExtractor:
         # Average over the time dimension (axis=1)
         mean_features = np.mean(log_melspec, axis=1)
         return mean_features
+
+    def extract_dynamic(self, y, target_frames=50):
+        """
+        Extracts dynamic time-series features for consonants (keeps the time dimension).
+        Pads or truncates to a fixed number of frames (target_frames) to allow batching.
+        Returns a 2D array of shape (n_mels, target_frames)
+        """
+        log_melspec = self.extract_log_mel(y)
+        n_mels, t = log_melspec.shape
+        
+        if t >= target_frames:
+            # Truncate
+            return log_melspec[:, :target_frames]
+        else:
+            # Pad with minimum value (silence)
+            pad_width = target_frames - t
+            min_val = np.min(log_melspec)
+            padded = np.pad(log_melspec, ((0, 0), (0, pad_width)), mode='constant', constant_values=min_val)
+            return padded
