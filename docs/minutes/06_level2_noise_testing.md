@@ -38,4 +38,22 @@
 - これにより、計算上の10dBよりも「分類器から見た実効的なSNR」はやや改善される形となるが、これが「送話側雑音（電話機に入る前の環境音）」の物理的に正しい挙動である。
 
 ## 6.5 テスト結果 (Pink Noise)
-*(本測定の実行後に追記)*
+
+10分類（母音5 ＋ 子音様式5）に対し、複数のSNRでレベル2テストを実行した結果、以下のOverall Accuracy推移が得られた。
+- Clean (∞): 72.05%
+- 20.0dB: 69.76%
+- 10.0dB: 65.88%
+- 5.0dB: 62.48%
+- 0.0dB: 56.72%
+
+### 6.5.1 SNR耐性曲線（崩れ方の可視化）
+
+![SNR Robustness Curve](../assets/snr_robustness_curve.png)
+
+### 6.5.2 混同行列の推移
+
+**10.0dB (Moderate Noise)**
+![Confusion Matrix 10dB](../assets/cm_noise_10.0dB.png)
+
+**0.0dB (Heavy Noise)**
+![Confusion Matrix 0dB](../assets/cm_noise_0.0dB.png)
