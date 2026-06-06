@@ -29,17 +29,21 @@ class JVSCVExtractor:
                     phonemes.append({'start': start, 'end': end, 'phoneme': ph})
         return phonemes
 
-    def extract_cv_syllables(self, speakers, target_consonants, target_vowel='a', pre_margin_ms=30.0, post_margin_ms=10.0):
+    def extract_cv_syllables_vowel_anchor(self, speakers, target_consonants, target_vowel='a', pre_vowel_ms=60.0, post_vowel_ms=40.0):
         """
-        Scans the lab files for the specified speakers, extracts CV syllables
-        matching (target_consonant + target_vowel), and applies Phase 1 degradation.
-        Includes a time margin (pre/post) to absorb alignment quantization errors.
+        Extracts CV syllables using a fixed-length window anchored at the *vowel start*.
+        This bypasses Julius's inaccurate consonant-start boundaries and naturally prevents
+        zero-padding cheating in linear classifiers.
         Returns X_clean, X_deg, y, metadata.
         """
         X_clean = []
         X_deg = []
         y = []
         meta = []
+        
+        # Fixed length in samples
+        total_duration = (pre_vowel_ms + post_vowel_ms) / 1000.0
+        expected_samples = int(total_duration * self.sr_orig)
         
         for speaker in speakers:
             wav_dir = os.path.join(self.data_dir, speaker, 'parallel100', 'wav24kHz16bit')
@@ -71,16 +75,24 @@ class JVSCVExtractor:
                     ph2 = phonemes[i+1]
                     
                     if ph1['phoneme'] in target_consonants and ph2['phoneme'] == target_vowel:
-                        start_time = ph1['start']
+                        # Context filter: Reject if preceded by silence/pause to avoid boundary artifacts
+                        prev_ph = phonemes[i-1] if i > 0 else None
+                        if prev_ph is None or prev_ph['phoneme'] in ['silB', 'sp', 'silE']:
+                            continue
+                            
+                        cons_start = ph1['start']
                         vowel_start = ph2['start']
-                        end_time = ph2['end']
+                        vowel_end = ph2['end']
                         
-                        # Apply Margins
-                        slice_start = max(0.0, start_time - (pre_margin_ms / 1000.0))
-                        slice_end = min(len(audio) / self.sr_orig, end_time + (post_margin_ms / 1000.0))
+                        # Vowel-anchored slice
+                        slice_start = vowel_start - (pre_vowel_ms / 1000.0)
+                        slice_end = slice_start + total_duration
                         
                         start_idx = int(slice_start * self.sr_orig)
-                        end_idx = int(slice_end * self.sr_orig)
+                        end_idx = start_idx + expected_samples
+                        
+                        if start_idx < 0 or end_idx > len(audio):
+                            continue # Out of bounds
                         
                         # Extract clean CV syllable
                         cv_audio = audio[start_idx:end_idx]
@@ -95,9 +107,9 @@ class JVSCVExtractor:
                             'speaker': speaker,
                             'file': lab_file,
                             'slice_start': slice_start,
-                            'cons_start_rel': start_time - slice_start,
+                            'cons_start_rel': cons_start - slice_start,
                             'vowel_start_rel': vowel_start - slice_start,
-                            'vowel_end_rel': end_time - slice_start
+                            'vowel_end_rel': vowel_end - slice_start
                         })
                         
         return X_clean, X_deg, y, meta
